@@ -1,0 +1,7 @@
+/node_modules
+/.idea
+/public/dist
+.DS_Store
+/yarn-error.log
+/declarations
+/public/index.html
