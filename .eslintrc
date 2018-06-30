@@ -1,0 +1,59 @@
+{
+    "extends": "airbnb",
+    "parser": "typescript-eslint-parser",
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true
+    },
+    "plugins": [
+        "prettier"
+    ],
+    "rules": {
+        "prettier/prettier": "error",
+        "no-debugger": 0,
+        "no-console": 0,
+        "new-cap": 0,
+        "strict": 0,
+        "no-underscore-dangle": 0,
+        "no-use-before-define": 0,
+        "eol-last": 0,
+        "no-unused-vars": 1,
+        "semi": "off",
+        "object-curly-spacing": "off",
+        "comma-dangle": "off",
+        "indent": "off",
+        "function-paren-newline": "off",
+        "import/no-dynamic-require": "off",
+        "global-require": 0,
+        "object-curly-newline": [
+            "error",
+            {
+                "consistent": true
+            }
+        ],
+        "no-trailing-spaces": "off",
+        "no-restricted-syntax": "off",
+        "no-await-in-loop": "off",
+        "no-confusing-arrow": "off",
+        "import/no-extraneous-dependencies": "off",
+        "import/no-unresolved": "off",
+        "import/extensions": "off",
+        "import/prefer-default-export": "off",
+        "no-shadow": "off",
+        "arrow-parens": "off",
+        "curly": "off",
+        "no-param-reassign": "off",
+        "camelcase": "off",
+        "no-mixed-operators": "off",
+        "no-nested-ternary": "off",
+        "no-plusplus": "off",
+        "class-methods-use-this": "off",
+        "max-len": [
+            1,
+            120
+        ],
+        "no-undef": "off",
+        "no-restricted-globals": "off"
+    }
+}
