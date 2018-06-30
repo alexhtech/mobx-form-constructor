@@ -4,7 +4,12 @@ const { default: base } = require('./webpack.config.base')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-const { ENTRY, OUTPUT_PATH = '../../dist', PUBLIC_PATH = '/dist/', INDEX_PATH = '../../index.html' } = process.env
+const {
+    ENTRY,
+    OUTPUT_PATH = '../../dist',
+    PUBLIC_PATH = '/mobx-form-constructor/dist/',
+    INDEX_PATH = '../../index.html'
+} = process.env
 
 module.exports = merge(base, {
     mode: 'production',
