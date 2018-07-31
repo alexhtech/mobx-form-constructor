@@ -15,8 +15,6 @@ jobs:
       script: yarn test
     - stage: build
       script: yarn build
-    - stage: npm publish
-      script: skip
       deploy:
         provider: npm
         api_key: $NPM_API_KEY
