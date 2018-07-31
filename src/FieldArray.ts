@@ -1,4 +1,4 @@
-import { action, flow, observable } from 'mobx'
+import { action, observable, runInAction } from 'mobx'
 import get from 'lodash.get'
 
 import { Form, FormModel, Validate } from './Form'
@@ -34,14 +34,14 @@ export class FieldArray {
         this[property] = value
     }
 
-    public $validate = flow(this.validateField.bind(this));
-
-    private *validateField() {
+    public $validate = async () => {
         let valid: boolean = true
         if (this.validate) {
             try {
-                this.validating = true
-                const error = yield this.validate(this)
+                runInAction(() => {
+                    this.validating = true
+                })
+                const error = await this.validate(this)
                 if (error) {
                     this.set('error', error)
                     valid = false
@@ -50,9 +50,13 @@ export class FieldArray {
                     this.set('error', '')
                 }
 
-                this.validating = false
+                runInAction(() => {
+                    this.validating = false
+                })
             } catch (e) {
-                this.validating = false
+                runInAction(() => {
+                    this.validating = false
+                })
             }
         }
 

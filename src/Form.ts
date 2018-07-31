@@ -1,4 +1,4 @@
-import { action, observable, flow } from 'mobx'
+import { action, observable, runInAction } from 'mobx'
 import { parse } from 'qs'
 import merge from 'lodash.merge'
 import set from 'lodash.set'
@@ -102,37 +102,44 @@ export abstract class Form {
     public onSubmitFail?(error: any, form: Form): void
     public didChange?(value: any, field: Field, form: Form): void
 
-    @action public handleSubmit = flow(this.submit.bind(this));
-
-    private *submit(e?: Event) {
+    @action
+    public handleSubmit = async (e?: Event) => {
         if (e) {
             e.preventDefault()
         }
 
         if (this.pristine) {
-            this.valid = yield this.$validate()
+            this.set('valid', await this.$validate())
         }
 
         if (this.onSubmit) {
             try {
-                this.submitting = true
+                runInAction(() => {
+                    this.submitting = true
+                })
                 if (!this.valid) {
-                    this.submitted = false
-                    this.submitting = false
-                    this.submitFailed = true
+                    runInAction(() => {
+                        this.submitted = false
+                        this.submitting = false
+                        this.submitFailed = true
+                    })
                     if (this.onSubmitFail) this.onSubmitFail({}, this)
                     return
                 }
 
-                const response = yield this.onSubmit(this.getValues(), this)
+                const response = await this.onSubmit(this.getValues(), this)
                 if (this.onSubmitSuccess) this.onSubmitSuccess(response, this)
-                this.submitted = true
-                this.submitting = false
-                this.submitFailed = false
+                runInAction(() => {
+                    this.submitted = true
+                    this.submitting = false
+                    this.submitFailed = false
+                })
             } catch (e) {
-                this.submitted = true
-                this.submitting = false
-                this.submitFailed = true
+                runInAction(() => {
+                    this.submitted = true
+                    this.submitting = false
+                    this.submitFailed = true
+                })
                 if (this.onSubmitFail) {
                     this.onSubmitFail(e, this)
                 }
