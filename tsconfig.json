@@ -19,7 +19,8 @@
     "noUnusedLocals": true,
     "experimentalDecorators": true,
     "declaration": true,
-    "declarationDir": "./types"
+    "declarationDir": "./types",
+    "esModuleInterop": true
   },
   "include": [
     "./src/**/*"

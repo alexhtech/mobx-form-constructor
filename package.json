@@ -1,6 +1,6 @@
 {
     "name": "mobx-form-constructor",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "mobx-form constructor",
     "repository": "git@github.com:alexolefirenko/mobx-form-constructor.git",
     "author": "Alex <olefirenk@gmail.com>",
@@ -13,7 +13,7 @@
         "build:es6": "cross-env tsc --target es6 --outDir ./es6",
         "build:commonjs": "cross-env tsc --target es5 --module commonjs --outDir ./commonjs",
         "build": "npm run clean && npm run build:es6 && npm run build:commonjs",
-        "clean": "rm -rf ./commonjs ./es6",
+        "clean": "rm -rf ./commonjs ./es6 ./types",
         "test": "jest",
         "test:coverage": "jest --coverage",
         "deploy": "yarn test && yarn build && yarn publish"
@@ -22,10 +22,10 @@
         "mobx": "^4|^5"
     },
     "dependencies": {
+        "@types/lodash.get": "^4.4.3",
+        "@types/lodash.merge": "^4.6.3",
+        "@types/lodash.set": "^4.3.3",
         "@types/qs": "^6.5.1",
-        "@types/lodash.get":"^4.4.3",
-        "@types/lodash.merge":"^4.6.3",
-        "@types/lodash.set":"^4.3.3",
         "lodash.get": "^4.4.2",
         "lodash.merge": "^4.6.1",
         "lodash.set": "^4.3.2",
@@ -33,6 +33,7 @@
     },
     "devDependencies": {
         "@types/jest": "^23.0.0",
+        "@types/node": "^10.5.4",
         "cross-env": "^5.1.1",
         "eslint": "^4.19.1",
         "eslint-config-airbnb": "^16.1.0",
