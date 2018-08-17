@@ -1,52 +1,102 @@
-import { parse } from 'qs'
-// import merge = require('lodash.merge')
-// import get = require('lodash.get')
-// import set = require('lodash.set')
-
 import { Form } from '../Form'
 
-test('init', () => {
+const model = [
+    {
+        name: 'company',
+        value: 'The best company'
+    },
+    {
+        name: 'members[]',
+        model: [
+            {
+                name: 'firstName'
+            },
+            {
+                name: 'lastName'
+            },
+            {
+                name: 'hobbies[]'
+            }
+        ]
+    }
+]
+
+test('Form: init', () => {
     class FormViewModel extends Form {
         getModel() {
-            return [
-                {
-                    name: 'form.company',
-                    value: 'Besk'
-                },
-                {
-                    name: 'form.members[]',
-                    value: [],
-                    model: [
-                        {
-                            name: 'firstName'
-                        },
-                        {
-                            name: 'lastName'
-                        },
-                        {
-                            name: 'hobbies[]',
-                            model: [
-                                {
-                                    name: 'hobbyName'
-                                }
-                            ],
-                            value: [
-                                {
-                                    hobbyName: 'teamLead'
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+            return model
         }
     }
 
     const form = new FormViewModel()
-    form.fields.form.members.push({
-        firstName: 'alex',
-        lastName: 'olefirenko'
-    })
 
-    console.log(form.fields)
+    expect(form instanceof FormViewModel).toBe(true)
+})
+
+test('FieldArray: push', () => {
+    class FormViewModel extends Form {
+        getModel() {
+            return model
+        }
+    }
+
+    const form = new FormViewModel()
+
+    const member = {
+        firstName: 'Michael',
+        lastName: 'Jackson',
+        hobbies: ['music']
+    }
+
+    form.fields.members.push(member)
+
+    expect(form.getValues().members[0]).toEqual(member)
+})
+
+test('FieldArray: unshift', () => {
+    class FormViewModel extends Form {
+        getModel() {
+            return model
+        }
+    }
+
+    const form = new FormViewModel()
+
+    const member = {
+        firstName: 'Michael',
+        lastName: 'Jackson',
+        hobbies: ['music']
+    }
+
+    form.fields.members.unshift(member)
+
+    expect(form.getValues().members[0]).toEqual(member)
+})
+
+test('FieldArray: concat', () => {
+    class FormViewModel extends Form {
+        getModel() {
+            return model
+        }
+    }
+
+    const form = new FormViewModel()
+
+    const member = {
+        firstName: 'Michael',
+        lastName: 'Jackson',
+        hobbies: ['music']
+    }
+
+    const member2 = {
+        firstName: 'Elton',
+        lastName: 'Jhon',
+        hobbies: ['music']
+    }
+
+    form.fields.members.push(member)
+
+    form.fields.members.concat([member2])
+
+    expect(form.getValues().members).toEqual([member, member2])
 })

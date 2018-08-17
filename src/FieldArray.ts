@@ -1,77 +1,61 @@
-import { action, observable, runInAction } from 'mobx'
 import get from 'lodash.get'
+import { Form, FormModel } from './Form'
+import BaseField from './BaseField'
+import { Field } from './Field'
 
-import { Form, FormModel, Validate } from './Form'
-
-export class FieldArray {
+export class FieldArray extends BaseField {
     public static sliceName = (name: string) => name.slice(0, -2)
 
     constructor(field: FormModel, form: Form, initialValue?: any) {
+        super()
         this.name = FieldArray.sliceName(field.name)
-        this.value = initialValue || field.value || get(form.initialValues, this.name) || []
         this.form = form
         this.validate = field.validate
+
         if (field.model) {
             this.model = field.model
         }
+
+        this.value = this._parseValue(initialValue || field.value || get(form.initialValues, this.name) || [])
     }
 
-    public name: string
-    @observable public value: any
-    @observable public error?: any = ''
-    public form: Form
-    public model?: FormModel[] = [
+    public model: FormModel[] = [
         {
             name: ''
         }
     ]
 
-    public validate?: Validate
-    public validating: boolean = false
-
-    @action
-    public set = (property: string, value: any) => {
-        this[property] = value
-    }
-
-    public $validate = async () => {
-        let valid: boolean = true
-        if (this.validate) {
-            try {
-                runInAction(() => {
-                    this.validating = true
-                })
-                const error = await this.validate(this)
-                if (error) {
-                    this.set('error', error)
-                    valid = false
+    private _parseValue = (value: any[] | any): Field[] | Field => {
+        if (Array.isArray(value)) {
+            return value.map(item => {
+                const value = {}
+                Form.initializeFields(value, this.model, this.form, typeof item !== 'object' ? { '': item } : item)
+                if (this.model.length === 1 && this.model[0].name === '') {
+                    return value['']
                 } else {
-                    valid = true
-                    this.set('error', '')
+                    return value
                 }
-
-                runInAction(() => {
-                    this.validating = false
-                })
-            } catch (e) {
-                runInAction(() => {
-                    this.validating = false
-                })
+            })
+        } else {
+            const _value: any = {}
+            Form.initializeFields(_value, this.model, this.form, typeof value !== 'object' ? { '': value } : value)
+            if (this.model.length === 1 && this.model[0].name === '') {
+                return _value['']
+            } else {
+                return _value
             }
         }
-
-        return valid
     }
 
-    public push = (item: any) => {
-        if (this.model) {
-            const value: any = {}
-            Form.initializeFields(value, this.model, this.form, typeof item !== 'object' ? { '': item } : item)
-            if (this.model.length === 1 && !this.model[0].name) {
-                this.value.push(value[''])
-            } else {
-                this.value.push(value)
-            }
-        }
+    public push = (...item: any[]) => {
+        this.value.push(...item.map(item => this._parseValue(item)))
+    }
+
+    public unshift = (...item: any[]) => {
+        this.value.unshift(...item.map(item => this._parseValue(item)))
+    }
+
+    public concat = (...array: any[][]) => {
+        this.value = this.value.concat(...array.map(item => this._parseValue(item)))
     }
 }

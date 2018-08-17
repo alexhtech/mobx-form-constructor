@@ -67,14 +67,15 @@ export abstract class Form {
     public static initializeFields = (fields: any, model: FormModel[], form: Form, initialValue: any = {}) => {
         model.forEach(field => {
             if (Form.isFieldArray.test(field.name)) {
-                set(fields, FieldArray.sliceName(field.name), new FieldArray(field, form, field.value))
+                const slicedName = FieldArray.sliceName(field.name)
+                set(fields, slicedName, new FieldArray(field, form, field.value || get(initialValue, slicedName)))
             } else {
-                set(fields, field.name, new Field(field, form, get(initialValue, field.name)))
+                set(fields, field.name, new Field(field, form, field.value || get(initialValue, field.name)))
             }
         })
     }
 
-    public getValues = (fields = this.fields, values = {}) => {
+    public getValues = (fields = this.fields, values = {}): any => {
         Object.keys(fields).forEach(key => {
             const item = fields[key]
 
@@ -109,7 +110,7 @@ export abstract class Form {
         }
 
         if (this.pristine) {
-            this.set('valid', await this.$validate())
+            this.set('valid', await this._validate())
         }
 
         if (this.onSubmit) {
@@ -148,36 +149,36 @@ export abstract class Form {
     }
 
     public validateForm = async () => {
-        const status = await this.$validate()
+        const status = await this._validate()
         this.set('valid', status)
         return status
     }
 
-    private $validate = async (fields: any = this.fields, $valid = true) => {
+    private _validate = async (fields: any = this.fields, $valid = true) => {
         for (const key in fields) {
             if (Object.prototype.hasOwnProperty.call(fields, key)) {
                 const item = fields[key]
 
                 if (item instanceof Field) {
-                    const valid = await item.$validate()
+                    const valid = await item._validate()
                     if (!valid) {
                         $valid = valid
                     }
                 } else if (item instanceof FieldArray) {
-                    const valid = await item.$validate()
+                    const valid = await item._validate()
                     if (!valid) {
                         $valid = valid
                     }
 
                     for (const fields of item.value) {
                         const valid =
-                            fields instanceof Field ? await fields.$validate() : await this.$validate(fields, $valid)
+                            fields instanceof Field ? await fields._validate() : await this._validate(fields, $valid)
                         if (!valid) {
                             $valid = valid
                         }
                     }
                 } else {
-                    const valid = await this.$validate(fields[key], $valid)
+                    const valid = await this._validate(fields[key], $valid)
                     if (!valid) {
                         $valid = valid
                     }

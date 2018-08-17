@@ -1,15 +1,17 @@
 import { action, observable } from 'mobx'
 import get from 'lodash.get'
 
-import { Form, FormModel, Validate } from './Form'
+import { Form, FormModel } from './Form'
+import BaseField from './BaseField'
 
 export const enum FieldTypes {
     Default = 'input',
     Checkbox = 'checkbox'
 }
 
-export class Field {
+export class Field extends BaseField {
     constructor(field: FormModel, form: Form, initialValue?: any) {
+        super()
         this.form = form
         this.name = field.name
         this.type = field.type || FieldTypes.Default
@@ -22,70 +24,21 @@ export class Field {
 
         return this
     }
-
-    public form: Form
-
-    public name: string
-
     public type: FieldTypes
 
-    public initialValue?: any
-
     public active: boolean = false
-
-    @observable public value?: any = ''
 
     @observable public touched: boolean = false
 
     @observable public visited: boolean = false
 
-    @observable public error: any = ''
-
-    @observable public validating: boolean = false
-
     public normalize?(value: any, field: Field): any
 
     public didChange?(field: Field, form: Form): any
 
-    public validate?: Validate
-
-    public $validate = async () => {
-        let valid: boolean = true
-        if (this.validate) {
-            try {
-                this.set('validating', true)
-                const error = await this.validate(this)
-
-                if (error) {
-                    this.set('error', error)
-                    valid = false
-                } else {
-                    valid = true
-                    this.set('error', '')
-                }
-
-                this.set('validating', false)
-            } catch (e) {
-                this.set('validating', false)
-            }
-        }
-
-        return valid
-    }
-
-    @action
-    public set = (property: string, value: any) => {
-        this[property] = value
-    }
-
     @action
     public clear = () => {
         this.value = ''
-    }
-
-    @action
-    public reset = () => {
-        this.value = this.initialValue
     }
 
     public bind = () => {
