@@ -204,6 +204,4 @@ export abstract class Form {
     public set = (property: string, value: any) => {
         this[property] = value
     }
-
-    $ = (field: string) => this.fields[field]
 }
