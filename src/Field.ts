@@ -6,7 +6,8 @@ import BaseField from './BaseField'
 
 export const enum FieldTypes {
     Default = 'input',
-    Checkbox = 'checkbox'
+    Checkbox = 'checkbox',
+    Radio = 'radio'
 }
 
 export class Field extends BaseField {
@@ -18,6 +19,14 @@ export class Field extends BaseField {
         this.value = field.value || initialValue || get(form.initialValues, field.name) || ''
         if (field.validate) {
             this.validate = field.validate
+        }
+
+        if (field.didChange) {
+            this.didChange = field.didChange
+        }
+
+        if (field.normalize) {
+            this.normalize = field.normalize
         }
 
         this.initialValue = this.value
@@ -41,23 +50,43 @@ export class Field extends BaseField {
         this.value = ''
     }
 
-    public bind = () => {
-        const { onChange, onFocus, onBlur, value, error, name, type } = this
-        const bindings = {
-            onChange,
-            onFocus,
-            onBlur,
-            value,
-            error,
-            name,
-            checked: undefined
-        }
+    public bind = (fieldType: FieldTypes, fieldValue?: string) => {
+        const { onChange, onFocus, onBlur, value, error } = this
 
-        if (type === FieldTypes.Checkbox) {
-            bindings.checked = value
-        }
+        switch (fieldType) {
+            case FieldTypes.Checkbox: {
+                return {
+                    onClick: () => {
+                        onChange(!this.value)
+                    },
+                    onFocus,
+                    onBlur,
+                    error,
+                    checked: !!value
+                }
+            }
 
-        return bindings
+            case FieldTypes.Radio: {
+                return {
+                    onClick: () => {
+                        onChange(fieldValue)
+                    },
+                    onFocus,
+                    onBlur,
+                    error,
+                    checked: fieldValue === value
+                }
+            }
+
+            default:
+                return {
+                    onChange,
+                    onFocus,
+                    onBlur,
+                    value,
+                    error
+                }
+        }
     }
 
     @action
@@ -78,15 +107,14 @@ export class Field extends BaseField {
         this.form.set('pristine', false)
         let $value
 
-        if (e && e.target && (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement)) {
-            if (this.type === FieldTypes.Checkbox) {
-                $value = !this.value
-                this.touched = true
-            } else {
-                $value = e.target.value
-            }
+        if (e && e.target) {
+            $value = e.target.value
         } else {
             $value = e
+        }
+
+        if (!this.active) {
+            this.touched = true
         }
 
         this.value = this.normalize ? this.normalize($value, this) : $value

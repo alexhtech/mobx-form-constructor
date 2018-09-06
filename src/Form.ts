@@ -9,6 +9,7 @@ import { FieldArray } from './FieldArray'
 
 export interface FormProps {
     initialValues?: any
+    extra?: any
 }
 
 export type Validate = (field: Field | FieldArray) => Promise<string> | string
@@ -19,6 +20,8 @@ export interface FormModel {
     validate?: Validate
     type?: FieldTypes
     model?: FormModel[]
+    didChange?: (field: Field, form: Form) => any
+    normalize?: (value: any, field: Field) => any
 }
 
 export abstract class Form {
@@ -29,6 +32,7 @@ export abstract class Form {
         if (this.getModel) {
             this.model = this.getModel(props, this)
         }
+        this.extra = props.extra
         this.initialize()
         return this
     }
@@ -52,6 +56,8 @@ export abstract class Form {
     @observable public error: any = ''
 
     public validate: Validate[] = []
+
+    public extra?: any
 
     public getModel?(props: FormProps, form: Form): FormModel[]
 
@@ -104,7 +110,7 @@ export abstract class Form {
     public didChange?(value: any, field: Field, form: Form): void
 
     @action
-    public handleSubmit = async (e?: Event) => {
+    public handleSubmit = async (e?: any) => {
         if (e) {
             e.preventDefault()
         }
