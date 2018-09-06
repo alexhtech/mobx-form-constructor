@@ -1,6 +1,6 @@
 {
     "name": "mobx-form-constructor",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "mobx-form constructor",
     "repository": "git@github.com:alexolefirenko/mobx-form-constructor.git",
     "author": "Alex <olefirenk@gmail.com>",
@@ -19,7 +19,7 @@
         "deploy": "yarn test && yarn build && yarn publish"
     },
     "peerDependencies": {
-        "mobx": "^4|^5"
+        "mobx": "^4 || ^5"
     },
     "dependencies": {
         "@types/lodash.get": "^4.4.3",
@@ -42,7 +42,7 @@
         "eslint-plugin-prettier": "^2.6.0",
         "eslint-plugin-react": "^7.9.1",
         "jest": "^22.1.4",
-        "mobx": "^5.0.3",
+        "mobx": "^5.0.4",
         "prettier": "^1.13.5",
         "ts-jest": "^22.4.6",
         "typescript": "^2.9.1",
