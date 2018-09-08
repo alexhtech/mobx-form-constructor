@@ -1,6 +1,4 @@
 import { action, observable } from 'mobx'
-import get from 'lodash.get'
-
 import { Form, FormModel } from './Form'
 import BaseField from './BaseField'
 
@@ -16,7 +14,8 @@ export class Field extends BaseField {
         this.form = form
         this.name = field.name
         this.type = field.type || FieldTypes.Default
-        this.value = field.value || initialValue || get(form.initialValues, field.name) || ''
+        this.value = initialValue
+
         if (field.validate) {
             this.validate = field.validate
         }
@@ -48,6 +47,30 @@ export class Field extends BaseField {
     @action
     public clear = () => {
         this.value = ''
+        this.touched = false
+        this.visited = false
+        this.error = ''
+
+        if (this.didChange) {
+            this.didChange(this, this.form)
+        }
+        if (this.form.didChange) {
+            this.form.didChange(this.form.getValues())
+        }
+    }
+
+    @action
+    public reset = (value = this.initialValue) => {
+        this.value = value
+        this.touched = false
+        this.visited = false
+        this.error = ''
+        if (this.didChange) {
+            this.didChange(this, this.form)
+        }
+        if (this.form.didChange) {
+            this.form.didChange(this.form.getValues())
+        }
     }
 
     public bind = (fieldType: FieldTypes, fieldValue?: string) => {
@@ -56,21 +79,17 @@ export class Field extends BaseField {
         switch (fieldType) {
             case FieldTypes.Checkbox: {
                 return {
-                    onClick: () => {
-                        onChange(!this.value)
-                    },
+                    onChange,
                     onFocus,
                     onBlur,
                     error,
-                    checked: !!value
+                    checked: value
                 }
             }
 
             case FieldTypes.Radio: {
                 return {
-                    onClick: () => {
-                        onChange(fieldValue)
-                    },
+                    onChange,
                     onFocus,
                     onBlur,
                     error,
@@ -108,7 +127,7 @@ export class Field extends BaseField {
         let $value
 
         if (e && e.target) {
-            $value = e.target.value
+            $value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
         } else {
             $value = e
         }
@@ -122,7 +141,7 @@ export class Field extends BaseField {
         this.form.validateForm()
 
         if (this.form.didChange) {
-            this.form.didChange(this.form.getValues(), this, this.form)
+            this.form.didChange(this.form.getValues())
         }
 
         if (this.didChange) {

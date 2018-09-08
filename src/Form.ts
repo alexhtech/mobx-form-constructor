@@ -33,8 +33,8 @@ export abstract class Form {
             this.model = this.getModel(props, this)
         }
         this.extra = props.extra
-        this.initialize()
-        return this
+        this.createStructure()
+        Form.initializeFields(this.fields, this.model, this, this.initialValues)
     }
 
     public initialValues?: any
@@ -55,28 +55,33 @@ export abstract class Form {
 
     @observable public error: any = ''
 
-    public validate: Validate[] = []
-
     public extra?: any
 
     public getModel?(props: FormProps, form: Form): FormModel[]
 
-    private initialize = () => {
-        this.createStructure(this.model)
-        Form.initializeFields(this.fields, this.model, this)
+    private createStructure = () => {
+        this.fields = merge({}, ...this.model.map(field => parse(field.name, { allowDots: true })))
     }
 
-    private createStructure = (model: FormModel[]) => {
-        this.fields = merge({}, ...model.map(field => parse(field.name, { allowDots: true })))
-    }
-
-    public static initializeFields = (fields: any, model: FormModel[], form: Form, initialValue: any = {}) => {
+    public static initializeFields = (fields: any, model: FormModel[], form: Form, initialValues: any) => {
         model.forEach(field => {
             if (Form.isFieldArray.test(field.name)) {
                 const slicedName = FieldArray.sliceName(field.name)
-                set(fields, slicedName, new FieldArray(field, form, field.value || get(initialValue, slicedName)))
+                set(
+                    fields,
+                    slicedName,
+                    new FieldArray(
+                        field,
+                        form,
+                        field.value !== undefined ? field.value : get(initialValues, slicedName, '') || ''
+                    )
+                )
             } else {
-                set(fields, field.name, new Field(field, form, field.value || get(initialValue, field.name)))
+                set(
+                    fields,
+                    field.name,
+                    new Field(field, form, field.value !== undefined ? field.value : get(initialValues, field.name, ''))
+                )
             }
         })
     }
@@ -107,7 +112,7 @@ export abstract class Form {
     public onSubmit?(values: any, form: Form): Promise<any> | any
     public onSubmitSuccess?(response: any, form: Form): void
     public onSubmitFail?(error: any, form: Form): void
-    public didChange?(value: any, field: Field, form: Form): void
+    public didChange?(values: any): void
 
     @action
     public handleSubmit = async (e?: any) => {
@@ -196,15 +201,30 @@ export abstract class Form {
     }
 
     @action
-    public reset = () => {
-        this.initialize()
+    public reset = (values = this.initialValues, clear = false) => {
+        this.model.forEach(field => {
+            const fieldName = Form.isFieldArray.test(field.name) ? FieldArray.sliceName(field.name) : field.name
+            const value = !clear ? (field.value !== undefined ? field.value : get(values, fieldName, '')) : ''
+
+            get(this.fields, fieldName).set('value', value)
+            get(this.fields, fieldName).set('touched', false)
+            get(this.fields, fieldName).set('visited', false)
+            get(this.fields, fieldName).set('error', '')
+        })
+
         this.error = ''
         this.valid = true
         this.submitting = false
         this.submitted = false
         this.submitFailed = false
         this.pristine = true
+
+        if (this.didChange) {
+            this.didChange(this.getValues())
+        }
     }
+
+    public clear = () => this.reset(null, true)
 
     @action
     public set = (property: string, value: any) => {

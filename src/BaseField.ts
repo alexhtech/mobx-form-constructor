@@ -21,11 +21,6 @@ abstract class BaseField {
         this[property] = value
     }
 
-    @action
-    public reset = () => {
-        this.value = this.initialValue
-    }
-
     public _validate = async () => {
         let valid: boolean = true
         if (this.validate) {

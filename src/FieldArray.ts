@@ -1,4 +1,4 @@
-import get from 'lodash.get'
+import { action } from 'mobx'
 import { Form, FormModel } from './Form'
 import BaseField from './BaseField'
 import { Field } from './Field'
@@ -16,7 +16,7 @@ export class FieldArray extends BaseField {
             this.model = field.model
         }
 
-        this.value = this._parseValue(initialValue || field.value || get(form.initialValues, this.name) || [])
+        this.value = this._parseValue(initialValue || [])
     }
 
     public model: FormModel[] = [
@@ -24,6 +24,8 @@ export class FieldArray extends BaseField {
             name: ''
         }
     ]
+
+    public didChange?(fieldArray: FieldArray, form: Form): any
 
     private _parseValue = (value: any[] | any): Field[] | Field => {
         if (Array.isArray(value)) {
@@ -49,13 +51,52 @@ export class FieldArray extends BaseField {
 
     public push = (...item: any[]) => {
         this.value.push(...item.map(item => this._parseValue(item)))
+        if (this.didChange) {
+            this.didChange(this, this.form)
+        }
+        if (this.form.didChange) {
+            this.form.didChange(this.form.getValues())
+        }
     }
 
     public unshift = (...item: any[]) => {
         this.value.unshift(...item.map(item => this._parseValue(item)))
+        if (this.didChange) {
+            this.didChange(this, this.form)
+        }
+        if (this.form.didChange) {
+            this.form.didChange(this.form.getValues())
+        }
     }
 
     public concat = (...array: any[][]) => {
         this.value = this.value.concat(...array.map(item => this._parseValue(item)))
+        if (this.didChange) {
+            this.didChange(this, this.form)
+        }
+        if (this.form.didChange) {
+            this.form.didChange(this.form.getValues())
+        }
+    }
+
+    @action
+    public reset = (value = this.initialValue) => {
+        this.value = this._parseValue(value || [])
+        if (this.didChange) {
+            this.didChange(this, this.form)
+        }
+        if (this.form.didChange) {
+            this.form.didChange(this.form.getValues())
+        }
+        this.error = ''
+    }
+
+    @action
+    public set = (key: string, value: any) => {
+        if (key === 'value') {
+            this.value = this._parseValue(value || [])
+        } else {
+            this[key] = value
+        }
     }
 }

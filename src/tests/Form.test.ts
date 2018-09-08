@@ -319,8 +319,7 @@ test('Form: props', () => {
         getModel() {
             return [
                 {
-                    name: 'firstName',
-                    value: ''
+                    name: 'firstName'
                 }
             ]
         }
@@ -375,7 +374,7 @@ test('Form: bind', () => {
     expect(maleRadio.checked).toBe(true)
     expect(femaleRadio.checked).toBe(false)
 
-    femaleRadio.onClick()
+    femaleRadio.onChange({ target: { value: 'female' } })
 
     updateRadio()
 
@@ -384,17 +383,17 @@ test('Form: bind', () => {
 
     let employed
 
-    function updateEmploed() {
+    function updateEmployed() {
         employed = form.fields.employed.bind('checkbox')
     }
 
-    updateEmploed()
+    updateEmployed()
 
     expect(employed.checked).toBe(false)
 
-    employed.onClick()
+    employed.onChange({ target: { type: 'checkbox', checked: true } })
 
-    updateEmploed()
+    updateEmployed()
 
     expect(employed.checked).toBe(true)
 
