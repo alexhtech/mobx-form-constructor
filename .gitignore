@@ -1,7 +1,7 @@
 /node_modules
 /types
-/commonjs
-/es6
+/lib
+/module
 /yarn-error.log
 .DS_Store
 /coverage
