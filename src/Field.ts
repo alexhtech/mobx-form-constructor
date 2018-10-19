@@ -29,6 +29,7 @@ export class Field extends BaseField {
         super()
         this.form = form
         this.name = field.name
+        this.label = field.label
         this.value = initialValue
 
         if (field.validator) {

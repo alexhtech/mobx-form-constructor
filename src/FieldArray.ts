@@ -11,6 +11,7 @@ export class FieldArray extends BaseField {
     constructor(field: IModel, form: Form, initialValue?: any) {
         super()
         this.name = FieldArray.sliceName(field.name)
+        this.label = field.label
         this.form = form
         this.validator = field.validator
 
