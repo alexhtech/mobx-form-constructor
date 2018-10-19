@@ -1,18 +1,24 @@
-import { Form, Validate } from './Form'
 import { observable, action, runInAction } from 'mobx'
+import { Form, IFields } from './Form'
+import { ValidatorType, Field } from './Field'
+import { FieldArray } from './FieldArray'
 
 abstract class BaseField {
     public name: string
 
-    @observable public value: any
+    public label?: string
 
-    @observable public error?: any = ''
+    @observable
+    public value: IFields | any
+
+    @observable
+    public error?: any = ''
 
     public form: Form
 
     public initialValue?: any
 
-    public validate?: Validate
+    public validator?: ValidatorType | ValidatorType[]
 
     public validating: boolean = false
 
@@ -21,14 +27,22 @@ abstract class BaseField {
         this[property] = value
     }
 
-    public _validate = async () => {
+    public validate = async (field: Field | FieldArray = this as any) => {
         let valid: boolean = true
-        if (this.validate) {
+        if (this.validator) {
             try {
                 runInAction(() => {
                     this.validating = true
                 })
-                const error = await this.validate(this as any)
+                let error
+                if (Array.isArray(this.validator)) {
+                    for (const validator of this.validator) {
+                        error = await validator(field, this.form)
+                        if (error) break
+                    }
+                } else {
+                    error = await this.validator(field, this.form)
+                }
                 if (error) {
                     this.set('error', error)
                     valid = false

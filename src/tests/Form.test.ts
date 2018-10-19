@@ -1,4 +1,5 @@
 import { Form } from '../Form'
+import { Field } from '../Field'
 
 const model = [
     {
@@ -115,7 +116,7 @@ test('Form: submit', async () => {
         getModel() {
             return model
         }
-        onSubmit($values) {
+        onSubmit($values: any) {
             values = $values
         }
     }
@@ -187,7 +188,7 @@ test('Field: validate', async () => {
             return [
                 {
                     name: 'firstName',
-                    validate: ({ value }) => !value && 'Required field'
+                    validator: ({ value }: Field) => !value && 'Required field'
                 }
             ]
         }
@@ -196,28 +197,28 @@ test('Field: validate', async () => {
     const form = new FormViewModel()
 
     await form.fields.firstName.onChange('')
-    await form.validateForm()
+    await form.validate()
     expect(form.fields.firstName.error).toEqual('Required field')
     expect(form.valid).toBe(false)
 })
 
 test('Field: onChange', () => {
-    let formValues
-    let firstNameValue
+    let formValues: any
+    let firstNameValue: any
     class FormViewModel extends Form {
         getModel() {
             return [
                 {
                     name: 'firstName',
-                    didChange: ({ value }) => {
+                    didChange: ({ value }: Field) => {
                         firstNameValue = value
                     },
-                    normalize: value => value
+                    normalize: (value: any) => value
                 }
             ]
         }
 
-        didChange(values) {
+        didChange(values: any) {
             formValues = values
         }
     }
@@ -362,8 +363,8 @@ test('Form: bind', () => {
 
     const form = new FormViewModel()
 
-    let maleRadio
-    let femaleRadio
+    let maleRadio: any
+    let femaleRadio: any
     function updateRadio() {
         maleRadio = form.fields.sex.bind('radio', 'male')
         femaleRadio = form.fields.sex.bind('radio', 'female')
@@ -381,7 +382,7 @@ test('Form: bind', () => {
     expect(maleRadio.checked).toBe(false)
     expect(femaleRadio.checked).toBe(true)
 
-    let employed
+    let employed: any
 
     function updateEmployed() {
         employed = form.fields.employed.bind('checkbox')

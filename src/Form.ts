@@ -4,66 +4,32 @@ import merge from 'lodash.merge'
 import set from 'lodash.set'
 import get from 'lodash.get'
 
-import { Field, FieldTypes } from './Field'
+import { Field, ValidatorType, NormalizerType } from './Field'
 import { FieldArray } from './FieldArray'
 
-export interface FormProps {
+export interface IFormProps {
     initialValues?: any
     extra?: any
 }
 
-export type Validate = (field: Field | FieldArray) => Promise<string> | string
-
-export interface FormModel {
+export interface IModel {
     name: string
+    label?: string
     value?: any
-    validate?: Validate
-    type?: FieldTypes
-    model?: FormModel[]
+    validator?: ValidatorType | ValidatorType[]
+    model?: IModel[]
     didChange?: (field: Field, form: Form) => any
-    normalize?: (value: any, field: Field) => any
+    normalizer?: NormalizerType | NormalizerType[]
+}
+
+export interface IFields {
+    [key: string]: Field | FieldArray | any
 }
 
 export abstract class Form {
     public static isFieldArray = /d*\[\]$/
 
-    constructor(props: FormProps = {}) {
-        this.initialValues = props.initialValues
-        if (this.getModel) {
-            this.model = this.getModel(props, this)
-        }
-        this.extra = props.extra
-        this.createStructure()
-        Form.initializeFields(this.fields, this.model, this, this.initialValues)
-    }
-
-    public initialValues?: any
-
-    public fields: any = {}
-
-    private model: FormModel[] = []
-
-    @observable public submitting: boolean = false
-
-    @observable public submitted: boolean = false
-
-    @observable public submitFailed: boolean = false
-
-    @observable public pristine: boolean = true
-
-    @observable public valid: boolean = true
-
-    @observable public error: any = ''
-
-    public extra?: any
-
-    public getModel?(props: FormProps, form: Form): FormModel[]
-
-    private createStructure = () => {
-        this.fields = merge({}, ...this.model.map(field => parse(field.name, { allowDots: true })))
-    }
-
-    public static initializeFields = (fields: any, model: FormModel[], form: Form, initialValues: any) => {
+    public static initializeFields = (fields: IFields, model: IModel[], form: Form, initialValues: any) => {
         model.forEach(field => {
             if (Form.isFieldArray.test(field.name)) {
                 const slicedName = FieldArray.sliceName(field.name)
@@ -86,6 +52,44 @@ export abstract class Form {
         })
     }
 
+    public initialValues?: any
+
+    public fields: IFields = {}
+
+    @observable
+    public submitting: boolean = false
+
+    @observable
+    public submitted: boolean = false
+
+    @observable
+    public submitFailed: boolean = false
+
+    @observable
+    public pristine: boolean = true
+
+    @observable
+    public valid: boolean = true
+
+    @observable
+    public error: any = ''
+
+    public extra?: any
+
+    private model: IModel[] = []
+
+    constructor(props: IFormProps = {}) {
+        this.initialValues = props.initialValues
+        if (this.getModel) {
+            this.model = this.getModel(props, this)
+        }
+        this.extra = props.extra
+        this.createStructure()
+        Form.initializeFields(this.fields, this.model, this, this.initialValues)
+    }
+
+    public getModel?(props: IFormProps, form: Form): IModel[]
+
     public getValues = (fields = this.fields, values = {}): any => {
         Object.keys(fields).forEach(key => {
             const item = fields[key]
@@ -97,8 +101,7 @@ export abstract class Form {
 
             if (item instanceof FieldArray) {
                 values[key] = item.value.map(
-                    (item: { [key: string]: Field } | Field) =>
-                        item instanceof Field ? item.value : this.getValues(item, {})
+                    (el: { [key: string]: Field } | Field) => (el instanceof Field ? el.value : this.getValues(el, {}))
                 )
                 return
             }
@@ -110,9 +113,12 @@ export abstract class Form {
     }
 
     public onSubmit?(values: any, form: Form): Promise<any> | any
+
     public onSubmitSuccess?(response: any, form: Form): void
+
     public onSubmitFail?(error: any, form: Form): void
-    public didChange?(values: any): void
+
+    public didChange?(values: any, form: Form): void
 
     @action
     public handleSubmit = async (e?: any) => {
@@ -121,7 +127,7 @@ export abstract class Form {
         }
 
         if (this.pristine) {
-            this.set('valid', await this._validate())
+            this.set('valid', await this.validate())
         }
 
         if (this.onSubmit) {
@@ -159,47 +165,6 @@ export abstract class Form {
         }
     }
 
-    public validateForm = async () => {
-        const status = await this._validate()
-        this.set('valid', status)
-        return status
-    }
-
-    private _validate = async (fields: any = this.fields, $valid = true) => {
-        for (const key in fields) {
-            if (Object.prototype.hasOwnProperty.call(fields, key)) {
-                const item = fields[key]
-
-                if (item instanceof Field) {
-                    const valid = await item._validate()
-                    if (!valid) {
-                        $valid = valid
-                    }
-                } else if (item instanceof FieldArray) {
-                    const valid = await item._validate()
-                    if (!valid) {
-                        $valid = valid
-                    }
-
-                    for (const fields of item.value) {
-                        const valid =
-                            fields instanceof Field ? await fields._validate() : await this._validate(fields, $valid)
-                        if (!valid) {
-                            $valid = valid
-                        }
-                    }
-                } else {
-                    const valid = await this._validate(fields[key], $valid)
-                    if (!valid) {
-                        $valid = valid
-                    }
-                }
-            }
-        }
-
-        return $valid
-    }
-
     @action
     public reset = (values = this.initialValues, clear = false) => {
         this.model.forEach(field => {
@@ -220,7 +185,7 @@ export abstract class Form {
         this.pristine = true
 
         if (this.didChange) {
-            this.didChange(this.getValues())
+            this.didChange(this.getValues(), this)
         }
     }
 
@@ -229,5 +194,43 @@ export abstract class Form {
     @action
     public set = (property: string, value: any) => {
         this[property] = value
+    }
+
+    public validate = async () => {
+        const status = await this.validateFields()
+
+        this.set('valid', status)
+
+        return status
+    }
+
+    private createStructure = () => {
+        this.fields = merge({}, ...this.model.map(field => parse(field.name, { allowDots: true })))
+    }
+
+    private validateFields = async (fields: IFields = this.fields, $valid = true) => {
+        for (const key of Object.keys(fields)) {
+            const field = fields[key]
+            if (field instanceof Field) {
+                if (!(await field.validate(field))) {
+                    $valid = false
+                }
+            } else if (field instanceof FieldArray) {
+                if (!(await field.validate(field))) {
+                    $valid = false
+                }
+
+                for (const el of field.value) {
+                    if (!(el instanceof Field ? await el.validate(el) : await this.validateFields(el, $valid))) {
+                        $valid = false
+                    }
+                }
+            } else {
+                if (!(await this.validateFields(field, $valid))) {
+                    $valid = false
+                }
+            }
+        }
+        return $valid
     }
 }
