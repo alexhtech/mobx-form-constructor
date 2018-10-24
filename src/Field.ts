@@ -127,7 +127,7 @@ export class Field extends BaseField {
 
         this.value = this.normalizer
             ? Array.isArray(this.normalizer)
-                ? this.normalizer.reduce((value, normalizer) => normalizer(value, this), this.value)
+                ? this.normalizer.reduce((value, normalizer) => normalizer(value, this), $value)
                 : this.normalizer($value, this)
             : $value
 

@@ -1,6 +1,20 @@
 import { Form } from '../Form'
 import { Field } from '../Field'
 
+export function digit(nextValue: string, { value }: Field) {
+    return /^\d*\.?\d*$/.test(nextValue) || !nextValue ? nextValue : value
+}
+
+export function integer(nextValue: string, { value }: Field) {
+    return /^\d*$/.test(nextValue) || !nextValue ? nextValue : value
+}
+
+export const precision = (nextValue: string, { value }: Field) => {
+    const regex = new RegExp(`^\\d+?(.?)?\\d{0,2}$`)
+
+    return regex.test(nextValue) || !nextValue ? nextValue : value
+}
+
 const model = [
     {
         name: 'company',
@@ -212,8 +226,7 @@ test('Field: onChange', () => {
                     name: 'firstName',
                     didChange: ({ value }: Field) => {
                         firstNameValue = value
-                    },
-                    normalize: (value: any) => value
+                    }
                 }
             ]
         }
@@ -405,4 +418,26 @@ test('Form: bind', () => {
     expect(nameBinds.onFocus).toBe(form.fields.name.onFocus)
     expect(nameBinds.value).toBe(form.fields.name.value)
     expect(nameBinds.error).toBe(form.fields.name.error)
+})
+
+
+test('Form: normalizer', () => {
+    class FormViewModel extends Form {
+        getModel() {
+            return [
+                {
+                    name: 'amount',
+                    value: '',
+                    normalizer: [digit, precision]
+                }
+            ]
+        }
+    }
+
+    const form = new FormViewModel()
+
+
+    form.fields.amount.onChange('1.12')
+
+    expect(form.fields.amount.value).toBe('1.12')
 })
