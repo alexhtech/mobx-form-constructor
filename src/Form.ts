@@ -1,8 +1,9 @@
-import { action, observable, runInAction } from 'mobx'
+import { action, observable, runInAction, computed } from 'mobx'
 import { parse } from 'qs'
 import merge from 'lodash.merge'
 import set from 'lodash.set'
 import get from 'lodash.get'
+import isEqual from 'lodash.isequal'
 
 import { Field, ValidatorType, NormalizerType } from './Field'
 import { FieldArray } from './FieldArray'
@@ -202,6 +203,11 @@ export abstract class Form {
         this.set('valid', status)
 
         return status
+    }
+
+    @computed
+    public get changed() {
+        return !isEqual(this.getValues(), this.initialValues)
     }
 
     private createStructure = () => {

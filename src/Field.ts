@@ -1,4 +1,5 @@
-import { action, observable } from 'mobx'
+import { action, observable, computed } from 'mobx'
+import isEqual from 'lodash.isequal'
 import { Form, IModel } from './Form'
 import BaseField from './BaseField'
 import { FieldArray } from './FieldArray'
@@ -111,7 +112,7 @@ export class Field extends BaseField {
     }
 
     @action
-    onChange = (e: any) => {
+    public onChange = (e: any) => {
         this.form.set('pristine', false)
         let $value
 
@@ -140,5 +141,10 @@ export class Field extends BaseField {
         if (this.didChange) {
             this.didChange(this, this.form)
         }
+    }
+
+    @computed
+    public get changed() {
+        return !isEqual(this.value, this.initialValue)
     }
 }

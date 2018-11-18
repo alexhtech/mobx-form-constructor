@@ -420,7 +420,6 @@ test('Form: bind', () => {
     expect(nameBinds.error).toBe(form.fields.name.error)
 })
 
-
 test('Form: normalizer', () => {
     class FormViewModel extends Form {
         getModel() {
@@ -436,8 +435,34 @@ test('Form: normalizer', () => {
 
     const form = new FormViewModel()
 
-
     form.fields.amount.onChange('1.12')
 
     expect(form.fields.amount.value).toBe('1.12')
+})
+
+test('Form, Field: changed properties', () => {
+    const initialValues = {
+        firstName: 'Alex',
+        lastName: ''
+    }
+
+    class FormViewModel extends Form {
+        getModel() {
+            return [
+                {
+                    name: 'firstName'
+                },
+                {
+                    name: 'lastName'
+                }
+            ]
+        }
+    }
+
+    const form = new FormViewModel({ initialValues })
+
+    form.fields.lastName.onChange('Olefirenko')
+
+    expect(form.changed).toBe(true)
+    expect(form.fields.firstName.changed).toBe(false)
 })
