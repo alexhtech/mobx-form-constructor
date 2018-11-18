@@ -167,15 +167,20 @@ export abstract class Form {
     }
 
     @action
-    public reset = (values = this.initialValues, clear = false) => {
-        this.model.forEach(field => {
-            const fieldName = Form.isFieldArray.test(field.name) ? FieldArray.sliceName(field.name) : field.name
-            const value = !clear ? (field.value !== undefined ? field.value : get(values, fieldName, '')) : ''
+    public reset = (clear = false) => {
+        this.model.forEach(({ name }) => {
+            const fieldName = Form.isFieldArray.test(name) ? FieldArray.sliceName(name) : name
+            const field = get(this.fields, fieldName)
 
-            get(this.fields, fieldName).set('value', value)
-            get(this.fields, fieldName).set('touched', false)
-            get(this.fields, fieldName).set('visited', false)
-            get(this.fields, fieldName).set('error', '')
+            if (clear) {
+                field.clear()
+            } else {
+                field.reset()
+            }
+
+            field.set('touched', false)
+            field.set('visited', false)
+            field.set('error', '')
         })
 
         this.error = ''
@@ -190,7 +195,7 @@ export abstract class Form {
         }
     }
 
-    public clear = () => this.reset(null, true)
+    public clear = () => this.reset(true)
 
     @action
     public set = (property: string, value: any) => {

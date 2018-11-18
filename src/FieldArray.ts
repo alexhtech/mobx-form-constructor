@@ -18,8 +18,8 @@ export class FieldArray extends BaseField {
         if (field.model) {
             this.model = field.model
         }
-
-        this.value = this.parseValue(initialValue || [])
+        this.initialValue = initialValue || []
+        this.value = this.parseValue(this.initialValue)
     }
 
     public didChange?(fieldArray: FieldArray, form: Form): any
@@ -55,8 +55,8 @@ export class FieldArray extends BaseField {
     }
 
     @action
-    public reset = (value = this.initialValue) => {
-        this.value = this.parseValue(value || [])
+    public reset = (clear = false) => {
+        this.value = this.parseValue(clear ? [] : this.initialValue)
         if (this.didChange) {
             this.didChange(this, this.form)
         }
@@ -65,6 +65,8 @@ export class FieldArray extends BaseField {
         }
         this.error = ''
     }
+
+    public clear = () => this.reset(true)
 
     @action
     public set = (key: string, value: any) => {
