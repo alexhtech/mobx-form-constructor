@@ -52,6 +52,10 @@ export class Field extends BaseField {
 
     public didChange?(field: Field, form: Form): any
 
+    public didBlur?(field: Field, form: Form): any
+
+    public didFocus?(field: Field, form: Form): any
+
     @action
     public clear = () => {
         this.value = ''
@@ -102,6 +106,7 @@ export class Field extends BaseField {
     public onBlur = () => {
         this.touched = true
         this.active = false
+        if (this.didBlur) this.didBlur(this, this.form)
     }
 
     @action
@@ -109,6 +114,7 @@ export class Field extends BaseField {
         this.active = true
         this.form.validate()
         this.form.set('pristine', false)
+        if (this.didFocus) this.didFocus(this, this.form)
     }
 
     @action

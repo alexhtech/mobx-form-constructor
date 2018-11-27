@@ -14,6 +14,9 @@ abstract class BaseField {
     @observable
     public error?: any = ''
 
+    @observable
+    public info?: any = ''
+
     public form: Form
 
     public initialValue?: any
