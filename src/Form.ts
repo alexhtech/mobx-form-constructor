@@ -20,6 +20,9 @@ export interface IModel {
     validator?: ValidatorType | ValidatorType[]
     model?: IModel[]
     didChange?: (field: Field, form: Form) => any
+    didFocus?: (field: Field, form: Form) => any
+    didBlur?: (field: Field, form: Form) => any
+    info?: any
     normalizer?: NormalizerType | NormalizerType[]
 }
 

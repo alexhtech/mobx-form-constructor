@@ -41,6 +41,18 @@ export class Field extends BaseField {
             this.didChange = field.didChange
         }
 
+        if (field.didFocus) {
+            this.didFocus = field.didFocus
+        }
+
+        if (field.didBlur) {
+            this.didBlur = field.didBlur
+        }
+
+        if (field.info) {
+            this.info = field.info
+        }
+
         if (field.normalizer) {
             this.normalizer = field.normalizer
         }

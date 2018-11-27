@@ -1,6 +1,6 @@
 {
     "name": "mobx-form-constructor",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "mobx-form constructor",
     "repository": "git@github.com:alexolefirenko/mobx-form-constructor.git",
     "author": "Alex <olefirenk@gmail.com>",
